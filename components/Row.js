@@ -3,12 +3,12 @@ import { View, Text, StyleSheet, Button} from 'react-native';
 import ToDoTask from './ToDoTask';
 
 const styles = StyleSheet.create({
-  container: {
+	content: {
     flex: 1,
     padding: 12,
     flexDirection: 'row',
   },
-	view1: {
+  view1: {
 		flex: 1,
 		flexDirection: 'column',
 	},
@@ -16,22 +16,19 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'flex-end',
 		alignItems: 'flex-end',	
-	},
-  text: {
-    marginLeft: 12,
-    fontSize: 16,
-  }
+	}
 });
 
 const Row = (props) => (
-  <View style={styles.container}>
+  <View 
+		style={styles.content}>
     <View style={styles.view1}>
-			<Text style={styles.text}>
+			<Text style={{color:props.status ? "green" : "red"}}>
 				{props.content}
 			</Text>
 		</View>
     <View style={styles.view2}>
-			<ToDoTask/>
+			{!props.status ? <ToDoTask/> : <Text style={{color:"green"}}>Feito</Text>}
 		</View>
   </View>
 );
