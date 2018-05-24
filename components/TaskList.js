@@ -30,6 +30,7 @@ const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 class TaskList extends React.Component {
   constructor(props) {
     super(props);
+    this.updateDataApi = this.updateDataApi.bind(this);
 
     this.state = {
       tasks: ds.cloneWithRows([]),
@@ -37,6 +38,24 @@ class TaskList extends React.Component {
       error: null
     }
   }
+
+	updateDataApi(file, task_id){    
+    fetch(API + '/' + task_id, {
+			method: 'put',
+			headers: {'Content-Type': 'application/json'},
+		 	body: file
+		})
+		.then(response => { 
+      if(response.ok){
+      	return true;
+			}else{
+        Alert.alert("Tarefa não alterada!", "Erro no servidor!");
+      }
+    })
+    .then(data => {
+				this.fetchDataApi();	
+		});
+	}
 
   fetchDataApi(){
     this.setState({isLoading: true});
@@ -61,15 +80,13 @@ class TaskList extends React.Component {
     this.fetchDataApi();
   }
 
-
-
   render() {
 		if(this.state.isLoading) return(<ActivityIndicator size="large" color="#0000ff" />)
     return (
       <ListView
         style={styles.container}
         dataSource={this.state.tasks}
-       	renderRow={(data) => <Row {...data} />}
+       	renderRow={(data) => <Row update={this.updateDataApi} {...data} />}
     		renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}  
 				renderHeader={() => <Header />}
 			/>

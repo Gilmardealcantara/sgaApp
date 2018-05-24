@@ -28,7 +28,7 @@ const Row = (props) => (
 			</Text>
 		</View>
     <View style={styles.view2}>
-			{!props.status ? <ToDoTask/> : <Text style={{color:"green"}}>Feito</Text>}
+			{!props.status ? <ToDoTask task_id={props.id} update={props.update}/> : <Text style={{color:"green"}}>Feito</Text>}
 		</View>
   </View>
 );
