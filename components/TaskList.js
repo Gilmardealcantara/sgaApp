@@ -5,7 +5,8 @@ ListView,
 StyleSheet, 
 Text, 
 Alert, 
-ActivityIndicator
+ActivityIndicator,
+RefreshControl
 } from 'react-native';
 
 import Header from './Header';
@@ -35,12 +36,20 @@ class TaskList extends React.Component {
     this.state = {
       tasks: ds.cloneWithRows([]),
       isLoading: false,
-      error: null
+      error: null,
+			refreshing: false
     }
   }
 
+  _onRefresh() {
+    this.setState({refreshing: true});
+    this.fetchData().then(() => {
+      this.setState({refreshing: false});
+    });
+  }
+
 	updateDataApi(file, task_id){    
-    fetch(API + '/' + task_id, {
+  	fetch(API + '/' + task_id, {
 			method: 'put',
 			headers: {'Content-Type': 'application/json'},
 		 	body: file
@@ -56,6 +65,25 @@ class TaskList extends React.Component {
 				this.fetchDataApi();	
 		});
 	}
+
+
+  fetchData(){
+    return fetch(API, {method: 'get'})
+      .then(response => {
+        if(response.ok){
+          return response.json();
+        }else{
+          throw new Error('Erro ao conectar com o servidor ...');
+        }
+      })
+      .then(data => {
+				this.setState({	
+					tasks: ds.cloneWithRows(data), 
+					isLoading: false
+				})
+			})
+      .catch(error => this.setState({error: error, isLoading: false}))
+  }
 
   fetchDataApi(){
     this.setState({isLoading: true});
@@ -84,7 +112,13 @@ class TaskList extends React.Component {
 		if(this.state.isLoading) return(<ActivityIndicator size="large" color="#0000ff" />)
     return (
       <ListView
-        style={styles.container}
+				refreshControl={          
+					<RefreshControl
+            refreshing={this.state.refreshing}
+            onRefresh={this._onRefresh.bind(this)}
+					/>  
+				}	
+      	style={styles.container}
         dataSource={this.state.tasks}
        	renderRow={(data) => <Row update={this.updateDataApi} {...data} />}
     		renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}  
