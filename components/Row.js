@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button} from 'react-native';
+import ToDoTask from './ToDoTask';
 
 const styles = StyleSheet.create({
   container: {
@@ -26,14 +27,11 @@ const Row = (props) => (
   <View style={styles.container}>
     <View style={styles.view1}>
 			<Text style={styles.text}>
-				{`${props.name.first} ${props.name.last}`}
+				{props.content}
 			</Text>
 		</View>
     <View style={styles.view2}>
-			<Button
-				title=" Fazer "
-				color="grey"
-			/>	
+			<ToDoTask/>
 		</View>
   </View>
 );

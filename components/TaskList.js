@@ -1,9 +1,17 @@
 import React from 'react';
-import { View, ListView, StyleSheet, Text } from 'react-native';
+import { 
+View, 
+ListView, 
+StyleSheet, 
+Text, 
+Alert, 
+ActivityIndicator
+} from 'react-native';
 
 import Header from './Header';
 import Row from './Row';
-import data from './demoData';
+
+const API = 'http://192.168.15.14:8080/api/tasks'; 
 
 const styles = StyleSheet.create({
   container: {
@@ -14,23 +22,53 @@ const styles = StyleSheet.create({
     flex: 1,
     height: StyleSheet.hairlineWidth,
     backgroundColor: '#8E8E8E',
-  }
+  } 
 });
+
+const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 
 class TaskList extends React.Component {
   constructor(props) {
     super(props);
 
-    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-		this.state = {
-      dataSource: ds.cloneWithRows(data),
-    };
+    this.state = {
+      tasks: ds.cloneWithRows([]),
+      isLoading: false,
+      error: null
+    }
   }
+
+  fetchDataApi(){
+    this.setState({isLoading: true});
+    fetch(API, {method: 'get'})
+      .then(response => {
+        if(response.ok){
+          return response.json();
+        }else{
+          throw new Error('Erro ao conectar com o servidor ...');
+        }
+      })
+      .then(data => {
+				this.setState({	
+					tasks: ds.cloneWithRows(data), 
+					isLoading: false
+				})
+			})
+      .catch(error => this.setState({error: error, isLoading: false}))
+  }
+
+  componentDidMount(){
+    this.fetchDataApi();
+  }
+
+
+
   render() {
+		if(this.state.isLoading) return(<ActivityIndicator size="large" color="#0000ff" />)
     return (
       <ListView
         style={styles.container}
-        dataSource={this.state.dataSource}
+        dataSource={this.state.tasks}
        	renderRow={(data) => <Row {...data} />}
     		renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}  
 				renderHeader={() => <Header />}

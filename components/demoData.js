@@ -1,4 +1,4 @@
-export default data = [
+export default data2 = [
   {
     "gender": "male",
     "name": {
