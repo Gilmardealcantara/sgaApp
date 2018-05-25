@@ -28,11 +28,16 @@ const styles = StyleSheet.create({
 const Header = (props) => (
   <View style={styles.container}>
 		<Text style={styles.text}>Tarefas</Text>
-		<TextInput
-      style={styles.input}
-      placeholder="Search..."
-      onChangeText={(text) => console.log('searching for ', text)}
-    />
+		{(!props.error) ? (
+      <TextInput
+        style={styles.input}
+        placeholder="Search..."
+        onChangeText={(text) => console.log('searching for ', text)}
+      />) : (
+      <Text style={{color:"red"}}> 
+        Erro ao conectar no servidor 
+      </Text>
+    )}
   </View>
 );
 

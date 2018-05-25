@@ -17,13 +17,12 @@ const API = 'http://192.168.15.14:8080/api/tasks';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 20,
   },
   separator: {
     flex: 1,
     height: StyleSheet.hairlineWidth,
     backgroundColor: '#8E8E8E',
-  } 
+  },
 });
 
 const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
@@ -58,12 +57,16 @@ class TaskList extends React.Component {
       if(response.ok){
       	return true;
 			}else{
-        Alert.alert("Tarefa não alterada!", "Erro no servidor!");
+          throw new Error("Erro no servidor!");
       }
     })
     .then(data => {
 				this.fetchDataApi();	
-		});
+		})
+    .catch(error => { 
+      Alert.alert("Tarefa não alterada!", "Erro no servidor!");
+      this.setState({error: error, isLoading: false})
+    })
 	}
 
 
@@ -79,7 +82,8 @@ class TaskList extends React.Component {
       .then(data => {
 				this.setState({	
 					tasks: ds.cloneWithRows(data), 
-					isLoading: false
+					isLoading: false,
+					error: null
 				})
 			})
       .catch(error => this.setState({error: error, isLoading: false}))
@@ -98,18 +102,23 @@ class TaskList extends React.Component {
       .then(data => {
 				this.setState({	
 					tasks: ds.cloneWithRows(data), 
-					isLoading: false
+					isLoading: false,
+					error: null
 				})
 			})
       .catch(error => this.setState({error: error, isLoading: false}))
   }
 
+
+  
   componentDidMount(){
     this.fetchDataApi();
   }
 
   render() {
-		if(this.state.isLoading) return(<ActivityIndicator size="large" color="#0000ff" />)
+		
+    //if(this.state.error) return this.errorConnection();
+    if(this.state.isLoading) return(<ActivityIndicator size="large" color="#0000ff" />)
     return (
       <ListView
 				refreshControl={          
@@ -122,7 +131,7 @@ class TaskList extends React.Component {
         dataSource={this.state.tasks}
        	renderRow={(data) => <Row update={this.updateDataApi} {...data} />}
     		renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}  
-				renderHeader={() => <Header />}
+				renderHeader={() => <Header error={this.state.error}/>}
 			/>
     );
   }
