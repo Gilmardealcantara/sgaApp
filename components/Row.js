@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button} from 'react-native';
-import ToDoTask from './ToDoTask';
 
 const styles = StyleSheet.create({
 	content: {
@@ -28,7 +27,12 @@ const Row = (props) => (
 			</Text>
 		</View>
     <View style={styles.view2}>
-			{!props.status ? <ToDoTask task_id={props.id} update={props.update}/> : <Text style={{color:"green"}}>Feito</Text>}
+			{!props.status ? (
+				<Button
+					title=" Fazer "
+					color="grey"
+					onPress={ () => props.change(props.id)}
+				/> ) : <Text style={{color:"green"}}>Feito</Text>}
 		</View>
   </View>
 );

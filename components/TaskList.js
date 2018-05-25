@@ -11,6 +11,8 @@ RefreshControl
 
 import Header from './Header';
 import Row from './Row';
+import TakePicture from './TakePicture';
+import RNFetchBlob from 'react-native-fetch-blob'
 
 const API = 'http://192.168.15.14:8080/api/tasks'; 
 
@@ -31,12 +33,17 @@ class TaskList extends React.Component {
   constructor(props) {
     super(props);
     this.updateDataApi = this.updateDataApi.bind(this);
+    this.changeScreen = this.changeScreen.bind(this);
+    this.renderCam = this.renderCam.bind(this);
+    this.renderTaskList = this.renderTaskList.bind(this);
 
     this.state = {
       tasks: ds.cloneWithRows([]),
       isLoading: false,
       error: null,
-			refreshing: false
+			refreshing: false,
+      cam: false,
+			task_todo: null
     }
   }
 
@@ -47,28 +54,27 @@ class TaskList extends React.Component {
     });
   }
 
-	updateDataApi(file, task_id){    
-  	fetch(API + '/' + task_id, {
-			method: 'put',
-			headers: {'Content-Type': 'application/json'},
-		 	body: file
+	updateDataApi(data, task_id){
+		let values = data.uri.split('/');
+    let filename = values[values.length - 1];
+		const name = filename.split('.')[0];
+		//Alert.alert("saving", filename + " \n\n\n" + name)	
+		RNFetchBlob.fetch('PUT', API + '/' + task_id, {
+			'Dropbox-API-Arg': JSON.stringify({
+				path : 'data.uri',
+				mode : 'add',
+				autorename : true,
+				mute : false
+			}),
+			'Content-Type' : 'application/octet-stream',
+		}, data.base64)
+		.then((res) => {
+			console.log(res.text())
 		})
-		.then(response => { 
-      if(response.ok){
-      	return true;
-			}else{
-          throw new Error("Erro no servidor!");
-      }
-    })
-    .then(data => {
-				this.fetchDataApi();	
+		.catch((err) => {
+			// error handling ..
 		})
-    .catch(error => { 
-      Alert.alert("Tarefa não alterada!", "Erro no servidor!");
-      this.setState({error: error, isLoading: false})
-    })
-	}
-
+  }
 
   fetchData(){
     return fetch(API, {method: 'get'})
@@ -81,7 +87,7 @@ class TaskList extends React.Component {
       })
       .then(data => {
 				this.setState({	
-					tasks: ds.cloneWithRows(data), 
+					tasks: ds.cloneWithRows(data.reverse()), 
 					isLoading: false,
 					error: null
 				})
@@ -101,22 +107,36 @@ class TaskList extends React.Component {
       })
       .then(data => {
 				this.setState({	
-					tasks: ds.cloneWithRows(data), 
+					tasks: ds.cloneWithRows(data.reverse()), 
 					isLoading: false,
 					error: null
 				})
 			})
-      .catch(error => this.setState({error: error, isLoading: false}))
+       .catch(error => this.setState({error: error, isLoading: false}))
   }
-
-
-  
+ 
   componentDidMount(){
-    this.fetchDataApi();
+    if(!this.state.cam)
+      this.fetchDataApi();
   }
 
-  render() {
-		
+	changeScreen(task_id){
+		this.setState({
+			cam:!this.state.cam,
+			task_todo:task_id
+		});
+	}
+  
+	renderCam(){
+    return(
+			<TakePicture 
+				task_id={this.state.task_todo}
+				update={this.updateDataApi}
+				change={this.changeScreen}
+		/>)
+  }
+
+  renderTaskList() {
     //if(this.state.error) return this.errorConnection();
     if(this.state.isLoading) return(<ActivityIndicator size="large" color="#0000ff" />)
     return (
@@ -129,12 +149,19 @@ class TaskList extends React.Component {
 				}	
       	style={styles.container}
         dataSource={this.state.tasks}
-       	renderRow={(data) => <Row update={this.updateDataApi} {...data} />}
+       	renderRow={(data) => <Row change={this.changeScreen} {...data} />}
     		renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}  
 				renderHeader={() => <Header error={this.state.error}/>}
 			/>
     );
   }
+ 
+  render(){
+		if(this.state.cam)
+			return this.renderCam();
+		return this.renderTaskList();
+  }
+
 }
 
 export default TaskList;
