@@ -58,7 +58,7 @@ class TaskList extends React.Component {
 		let values = data.uri.split('/');
     let filename = values[values.length - 1];
 		const name = filename.split('.')[0];
-		//Alert.alert("saving", filename + " \n\n\n" + name)	
+		Alert.alert("saving...")	
 		RNFetchBlob.fetch('PUT', API + '/' + task_id, {
 			'Dropbox-API-Arg': JSON.stringify({
 				path : 'data.uri',
@@ -69,10 +69,11 @@ class TaskList extends React.Component {
 			'Content-Type' : 'application/octet-stream',
 		}, data.base64)
 		.then((res) => {
-			console.log(res.text())
+        Alert.alert("Sucesso!", "Tarefa\n" + res.json().content + "\nREALIZADA!!");
+        this.fetchDataApi();
 		})
 		.catch((err) => {
-			// error handling ..
+       Alert.alert("Falha", "Erro no servidor!\nTente mais tarde");
 		})
   }
 
